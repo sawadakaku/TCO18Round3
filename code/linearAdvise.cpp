@@ -42,13 +42,15 @@ vector<double> linearmax(vector<double> x) {
   vector<double> y(x.size());
   double mi = 0;
   double ma = 2;
+  double m = 0;
   for (int i = 0; i < x.size(); i++) {
     y[i] = x[i];
     ma = max(ma, y[i]);
     mi = min(mi, y[i]);
+    m += y[i];
   } 
   for (auto&& y_ : y) {
-    y_ = (y_ - mi)/(ma - mi);
+    y_ = (y_ - mi)/(m - static_cast<double>(y.size() * mi));
   }
   return y;
 }
