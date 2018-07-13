@@ -21,10 +21,11 @@ def main():
     parser = argparser()
     args = parser.parse_args()
     source_path = args.source
+    exec_path = source_path.replace('cpp', 'out').replace('code', 'execs')
     # compile c++ source file
     subprocess.check_output(
         ['g++', source_path, '-o',
-         source_path.replace('cpp', 'out'),
+         exec_path,
          '-g', '-O0',
          '-std=c++11'],
         timeout=3)
@@ -33,7 +34,7 @@ def main():
     for seed in seeds:
         out_data = subprocess.check_output(
             ['java', '-jar', './tester.jar',
-             '-exec', '{}'.format(source_path.replace('cpp', 'out')),
+             '-exec', f'{exec_path}',
              '-seed', f'{seed}'],
             timeout=3).decode('utf-8')
         score = out_data.splitlines()[-1]
