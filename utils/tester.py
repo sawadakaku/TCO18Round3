@@ -10,7 +10,8 @@ seeds = [i for i in range(10)]
 
 
 def argparser():
-    parser = argparse.ArgumentParser(description='compile source and test with some cases')
+    parser = argparse.ArgumentParser(
+        description='compile source and test with some cases')
     parser.add_argument('source', metavar='source', type=str,
                         help='path to source to be compiled')
     return parser
