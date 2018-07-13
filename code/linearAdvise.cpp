@@ -48,7 +48,7 @@ vector<double> linearmax(vector<double> x) {
     ma = max(ma, y[i]);
     mi = min(mi, y[i]);
     m += y[i];
-  } 
+  }
   for (auto&& y_ : y) {
     y_ = (y_ - mi)/(m - static_cast<double>(y.size() * mi));
   }
