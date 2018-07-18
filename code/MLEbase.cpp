@@ -86,7 +86,7 @@ private:
     double ret = 1.0;
     for (int j = 0; j < this->hists[i].size(); j++) {
       double llh;
-      llh = (1-acc) * gaussian(this->hists[i][j].ad, 0.0, 1.0);
+      llh = (1-acc) * gaussian(this->hists[i][j].ad, 0.0, 0.1);
       llh += acc * gaussian(this->hists[i][j].ad, this->hists[i][j].rt, stdev);
       ret *= llh;
     }
@@ -114,7 +114,7 @@ private:
           best_llh = curr_llh;
         }
       }
-      curr_stdev = min(0.2, best_acc + 0.002);
+      curr_stdev = min(0.2, best_stdev + 0.002);
       curr_llh = this->calc_likelihood(i, curr_acc, curr_stdev);
       if (best_llh < curr_llh) {
         best_stdev = curr_stdev;
@@ -167,7 +167,7 @@ private:
   void update(vector<int> recent) {
     for (int i = 0; i < this->N; i++) {
       Hist t = {static_cast<double>(lastadvices[i])/100.0,
-                static_cast<double>(recent[i])/static_cast<double>(lastinvests[i]) - 1};
+                static_cast<double>(recent[i])/static_cast<double>(lastinvests[i])};
       this->hists[i].push_back(t);
     }
     this->update_params();
@@ -180,7 +180,7 @@ private:
     for (int j = 0; j <= 200; j++) {
       double t;
       double x = -1.0 + static_cast<double>(j)*0.01;
-      t = (1-acc) * gaussian(x, 0.0, 1.0);
+      t = (1-acc) * gaussian(x, 0.0, 0.1);
       t += acc * gaussian(x, ad, stdev);
       ret += t * 0.005 * x;
     }
@@ -196,7 +196,8 @@ private:
 public:
   vector<int> getInvestments(vector<int> advice, vector<int> recent, int money, int timeLeft, int roundsLeft) {
     int N = static_cast<int>(advice.size());
-    vector<int> ret(N);
+    money -= N*100;
+    vector<int> ret(N, 100);
     vector<double> x(N), w(N);
     if (this->cnt == 0) {
       this->init(N);
@@ -223,7 +224,7 @@ public:
     if (t > 1.0) cerr << "over amount, t = " << t << endl;
 
     for (int i = 0; i < N; i++) {
-      ret[i] = min(MAX_INVEST, static_cast<int>(static_cast<double>(money)*w[i]));
+      ret[i] += min(MAX_INVEST-100, static_cast<int>(static_cast<double>(money)*w[i]));
     }
     long long am = 0;
     for (auto&& r : ret) {
@@ -231,6 +232,13 @@ public:
     }
     cerr << "money: " << money << ", inv_amt: " << am << ", t: " << t << endl;
     this->cnt++;
+    if (roundsLeft == 1) {
+      for (int i = 0; i < N; i++) {
+        cerr << "Expert" << i << ": acc=" << this->accs[i] << ", stdev=" << this->stdevs[i] << endl;
+      }
+    }
+    this->lastadvices = advice;
+    this->lastinvests = ret;
     return ret;
   }
 };
