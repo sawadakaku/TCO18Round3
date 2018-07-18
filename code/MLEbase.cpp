@@ -61,7 +61,7 @@ vector<double> linearmax(vector<double> x) {
 }
 
 double gaussian(double x, double mu, double sig) {
-  return exp(-(x-mu)/(2*pow(sig, 2.0)))/(sig*sqrt(2*M_PI));
+  return exp(-pow(x-mu, 2)/(2*pow(sig, 2)))/(sig*sqrt(2*M_PI));
 }
 
 class InvestmentAdvice {
@@ -93,7 +93,7 @@ private:
     return ret;
   }
   void sa(int i) {
-    int num_loop = 100;
+    int num_loop = 10;
     double best_acc, best_stdev, curr_acc, curr_stdev, best_llh, curr_llh;
     best_acc = this->accs[i];
     best_stdev = this->stdevs[i];
@@ -129,26 +129,26 @@ private:
       }
     }
     for (int j = 0; j < num_loop; j++) {
-      curr_acc = min(1.0, best_acc + 0.0001);
+      curr_acc = min(1.0, best_acc + 0.001);
       curr_llh = this->calc_likelihood(i, curr_acc, curr_stdev);
       if (best_llh < curr_llh) {
         best_acc = curr_acc;
         best_llh = curr_llh;
       } else {
-        curr_acc = max(0.0, best_acc - 0.0001);
+        curr_acc = max(0.0, best_acc - 0.001);
         curr_llh = this->calc_likelihood(i, curr_acc, curr_stdev);
         if (best_llh < curr_llh) {
           best_acc = curr_acc;
           best_llh = curr_llh;
         }
       }
-      curr_stdev = min(0.2, best_acc + 0.000002);
+      curr_stdev = min(0.2, best_acc + 0.00002);
       curr_llh = this->calc_likelihood(i, curr_acc, curr_stdev);
       if (best_llh < curr_llh) {
         best_stdev = curr_stdev;
         best_llh = curr_llh;
       } else {
-        curr_stdev = max(0.0, best_stdev - 0.00002);
+        curr_stdev = max(0.0, best_stdev - 0.0002);
         curr_llh = this->calc_likelihood(i, curr_acc, curr_stdev);
         if (best_llh < curr_llh) {
           best_stdev = curr_stdev;
@@ -173,16 +173,16 @@ private:
     this->update_params();
   }
   double calc_expectation(int i, int advice) {
-    double ret = 1.0;
+    double ret = 0.0;
     double ad = static_cast<double>(advice)*0.01;
     double acc = this->accs[i];
     double stdev = this->stdevs[i];
-    for (int j = 0; j < 200; j++) {
+    for (int j = 0; j <= 200; j++) {
       double t;
       double x = -1.0 + static_cast<double>(j)*0.01;
       t = (1-acc) * gaussian(x, 0.0, 1.0);
       t += acc * gaussian(x, ad, stdev);
-      ret += t * 0.01;
+      ret += t * 0.005 * x;
     }
     return ret;
   }
@@ -204,11 +204,17 @@ public:
       this->update(recent);
     }
     x = this->calc_expectations(advice);
+    /*
     for (int i = 0; i < N; i++) cerr << x[i] << ' ';
     cerr << endl;
+    */
     for (int i = 0; i < N; i++) {
       x[i] = max(x[i], 0.0);
     }
+    /*
+    for (int i = 0; i < N; i++) cerr << x[i] << ' ';
+    cerr << endl;
+    */
     w = linearmax(x);
     double t = 0.0;
     for (auto&& y : w) {
@@ -224,7 +230,7 @@ public:
       am += r;
     }
     cerr << "money: " << money << ", inv_amt: " << am << ", t: " << t << endl;
-
+    this->cnt++;
     return ret;
   }
 };
