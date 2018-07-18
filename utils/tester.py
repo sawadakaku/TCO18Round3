@@ -36,7 +36,7 @@ def main():
             ['java', '-jar', './tester.jar',
              '-exec', f'{exec_path}',
              '-seed', f'{seed}'],
-            timeout=3).decode('utf-8')
+            timeout=10).decode('utf-8')
         score = out_data.splitlines()[-1]
         score = int(float(score.split()[-1]))
         d = {'seed': seed, 'score': score}
